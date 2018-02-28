@@ -2,6 +2,8 @@ function getPersons() {
     var num = prompt("Какое количество пользователей Вы хотите добавить?"),
         arrayPersons = [];
 
+    num = (num === null) ? 0 : num;
+
     for (var i = 0; i < num; i++) {
         var request = prompt("Введите через запятую данные пользователя №"
             + (i + 1)
@@ -102,5 +104,14 @@ function showResult(result) {
 
 }
 
+function run() {
+    var persons = getPersons();
 
-showResult(sorting(getPersons()));
+    if (persons.length != 0) {
+        showResult(sorting(persons));
+    }
+
+}
+
+
+run();
