@@ -2,26 +2,24 @@ function getPersons() {
     var num = prompt("Какое количество пользователей Вы хотите добавить?"),
         arrayPersons = [];
 
-    num = (num === null) ? 0 : num;
+    if (!num || !+num) return false; //если число null или число (0 или строка) - возврат
+    //(num=null => true || true) (num=0 => false || true) (num="a" => false || true) (num=1 => false || false)
 
     for (var i = 0; i < num; i++) {
         var request = prompt("Введите через запятую данные пользователя №"
             + (i + 1)
-            + ": имя, возраст, профессия", "name, age, profession");
+            + ": имя, возраст, профессия", "name, age, profession"),
+            person = {},
+            buffer;
 
-        arrayPersons[i] = request.split(", "); //в i-ячейку помещаем массив данных
+        buffer = request.split(", "); //разбиваем строку в массив
+        person.name = buffer[0]//имя
+        person.age = +buffer[1]; //возраст
+        person.profession = buffer[2]; //проессия
+        arrayPersons.push(person); // помещаем в массив - массив из разбитой строки
     }
 
-    result = arrayPersons.map(function (value) {
-        var person = {};
-
-        person.name = value[0]; //имя
-        person.age = +value[1]; //возраст
-        person.profession = value[2]; //проессия
-        return person; //возвращаем обьект
-    });
-
-    return result; //возвращаем массив из обьектов
+    return arrayPersons;
 }
 
 
@@ -30,23 +28,18 @@ function sorting(arrayPersons) {
         sum = "", //опция Sum
         key = ""; //ключ для сортировки
 
-    do {
+    while ((sum !== "sum" && sum !== "") || !arrayKeys.includes(key)) {
         var request = prompt("Укажите по какому ключу сортировать? {name}, {age}, {profession}", "{}");
 
-        sum = request.slice(0, request.indexOf("{")).toLowerCase().trim(); //опция sum
-        key = request.slice(request.indexOf("{") + 1, request.indexOf("}")).toLowerCase(); //ключ для сортировки
+        //замена любое кол-во пробелов{любое кол-во симовлов} на ""
+        sum = request.replace(/\s*{\w*}/, "").toLowerCase();
+        //замена (любое кол-во симовлов+любое кол-во пробелов+{) или (}) на "" (g-глобальный поиск)
+        key = request.replace(/(\w*\s*{)|(})/g, "").toLowerCase();
 
-        if (arrayKeys.indexOf(key) === -1) {
-            alert("Неверный ключ");
-        }
+        if (!arrayKeys.includes(key)) alert("Неверный ключ");
+        if (sum !== "" && sum !== "sum") alert("Неверный параметр Sum");
 
-        if (sum !== "") {
-            if (sum !== "sum") {
-                alert("Неверный параметр Sum");
-            }
-        }
-
-    } while ((sum !== "sum" && sum !== "") || arrayKeys.indexOf(key) === -1)
+    }
 
 
     arrayPersons.sort(function (person1, person2) { //сортировка по ключу
@@ -63,19 +56,17 @@ function sorting(arrayPersons) {
         var arrayReturnSum = []; //будем отдавать другой массив
 
         if (key === "age") { //если ввели age - посчитать суммарный возраст
-            var ageSum = 0;
+            var sumAge;
 
-            arrayPersons.forEach(function (person) {
-                ageSum += person.age;
-            }, ageSum);
+            sumAge = arrayPersons.reduce(function (ageSum, person) {
+                return ageSum + person.age;
+            }, 0);
 
-            arrayReturnSum[0] = ageSum;
-
-            return arrayReturnSum; //отдаем массив с одним элементом ageSum
+            return arrayReturnSum.push(sumAge);
 
         } else { //если !== age
-            arrayPersons.forEach(function (person, index) {
-                arrayReturnSum[index] = person[key]; //формируем массив необходимых значений
+            arrayPersons.forEach(function (person) {
+                arrayReturnSum.push(person[key]); //формируем массив необходимых значений
             }, key);
 
             return arrayReturnSum; //отдаем массив необходимых значений
@@ -90,14 +81,13 @@ function showResult(result) {
     var div = document.getElementById("result"); //вытягиваем наш div
 
     result.forEach(function (person, index) {
-        var glue = (result.length === 1) ? "" : ", "; //элемент склеивания значений
 
         if (typeof(person) === "object") { //если элемент массива обьект
             div.innerHTML +=
-                "Имя: " + person.name + "; возраст: " + person.age + "; профессия: " + person.profession + ";<br>";
+                "Имя: " + person.name + "; возраст: " + person.age + "; профессия: " + person.profession + "<br>";
         } else { //если обычный массив
-            //если последний элемент - не добавляем glue
-            div.innerHTML += (index === result.length - 1) ? person : person + glue;
+            //если последний элемент - не добавляем ", "
+            div.innerHTML += (index === result.length - 1) ? person : person + ", ";
         }
 
     }, div);
@@ -105,13 +95,14 @@ function showResult(result) {
 }
 
 function run() {
-    var persons = getPersons();
+    var persons = getPersons(),
+        sortedResult;
 
-    if (persons.length != 0) {
-        showResult(sorting(persons));
+    if (persons) { //если введено кол-во пользователей
+        sortedResult = sorting(persons)
+        showResult(sortedResult);
     }
 
 }
-
 
 run();
